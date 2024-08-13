@@ -18,9 +18,9 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build . -t SSHooze 
+        docker build . -t sshooze 
 
     - name: Verify Docker image
       run: |
-        docker images | grep SSHooze
+        docker images | grep sshooze
 
