@@ -37,14 +37,21 @@ SSHooze is a base image that:
    Replace placeholders with your actual values:
 
    ```bash
-   docker run -it \
+   docker run \
      -e SSH_URL=your_domain \
      -e USER_NAME=user \
      -e PRIVATE_KEY="$(cat id_rsa)" \
      -e CERT_FILE_CONTENT="$(cat cert.pem)" \
-     SSHooze
+     SSHooze "your command or script"
    ```
-
+   ```bash
+   docker run \
+     -e SSH_URL=SSHizzleMyFizzle.com \
+     -e USER_NAME=BlackWidowWit \
+     -e PRIVATE_KEY="$(cat id_rsa)" \
+     -e CERT_FILE_CONTENT="$(cat cert.pem)" \
+     SSHooze "echo Cheen_Tapak_DamDam!"
+    ```
 ## 📜 Customization
 
 - **USER_NAME**: Default is `user`. Change it to your preferred username.
