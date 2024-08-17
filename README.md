@@ -23,13 +23,13 @@ SSHooze is a base image that:
    - **Build Locally**
 
      ```bash
-     docker build -t SSHooze .
+     docker build -t sshooze .
      ```
 
    - **Pull from Docker Hub**
 
      ```bash
-     docker pull SSHooze:latest
+     docker pull rohitw123/sshooze:latest
      ```
 
 3. **Run the Docker Container**

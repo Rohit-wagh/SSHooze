@@ -28,11 +28,16 @@ jobs:
           username: ${{ secrets.DOCKER_REPO_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and tag Docker image
+      - name: Build Docker image
         run: |
           docker build -t ${{ secrets.DOCKER_REPO_USERNAME }}/sshooze:$TAG .
+
+      - name: Tag Docker image as latest
+        run: |
+          docker tag ${{ secrets.DOCKER_REPO_USERNAME }}/sshooze:$TAG ${{ secrets.DOCKER_REPO_USERNAME }}/sshooze:latest
 
       - name: Push Docker image to Docker Hub
         run: |
           docker push ${{ secrets.DOCKER_REPO_USERNAME }}/sshooze:$TAG
+          docker push ${{ secrets.DOCKER_REPO_USERNAME }}/sshooze:latest
 
