@@ -44,7 +44,6 @@ SSHooze is a base image that:
      -e CERT_FILE_CONTENT="$(cat cert.pem)" \
      SSHooze "your command or script"
    ```
-
    Example:
    ```bash
    docker run \
