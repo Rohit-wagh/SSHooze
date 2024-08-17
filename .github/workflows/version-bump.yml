@@ -38,9 +38,8 @@ jobs:
       - name: Extract commit message
         id: extract_title
         run: |
-          title=$(git log -1 --pretty=%B)
+          title=$(git log -1 --pretty=%B | tr -d '\r\n')
           echo "TITLE=$title" >> $GITHUB_ENV
-
       - name: Bump Version
         id: bump_version
         run: |
