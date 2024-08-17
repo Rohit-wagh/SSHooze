@@ -32,7 +32,7 @@ jobs:
       - name: Get the latest tag
         id: get_latest_tag
         run: |
-          latest_tag=$(git describe --tags --abbrev=0 master 2>/dev/null || echo "1.0")
+          latest_tag=$(git rev-list --tags --max-count=1 master | xargs git describe --tags | awk -F'-' '{print $1}' | awk -F'.' '{print $1"."$2}' || echo "1.0")
           echo "lateset_tag: $latest_tag"
           echo "TAG=$latest_tag" >> $GITHUB_ENV
 
