@@ -42,7 +42,7 @@ SSHooze is a base image that:
      -e USER_NAME=user \
      -e PRIVATE_KEY="$(cat id_rsa)" \
      -e CERT_FILE_CONTENT="$(cat cert.pem)" \
-     SSHooze "your command or script"
+     rohitw123/sshooze:latest "your command or script"
    ```
    Example:
    ```bash
