@@ -1,0 +1,76 @@
+name: Version Bump
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  version_bump:
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Git
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git config --global user.name "Automation Bot"
+          git config --global user.email "automationbot@rohitwagh.in"
+        env:
+          GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          
+      - name: Fetch all tags
+        run: git fetch --tags
+
+      - name: Get the latest tag
+        id: get_latest_tag
+        run: |
+          latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "1.0")
+          echo "TAG=$latest_tag" >> $GITHUB_ENV
+
+      - name: Extract PR title
+        id: extract_title
+        run: |
+          # Only continue if this commit is from a pull request that was merged
+          if [ "${{ github.event.pusher.name }}" == "github-actions[bot]" ]; then
+            title=$(git log -1 --pretty=%B)
+            echo "TITLE=$title" >> $GITHUB_ENV
+          else
+            echo "Skipping as this is not a commit from a pull request."
+            exit 0
+          fi
+
+      - name: Bump Version
+        id: bump_version
+        run: |
+          version="${{ env.TAG }}"
+          IFS='.' read -r major minor <<< "$version"
+          title="${{ env.TITLE }}"
+
+          if [[ "$title" == feat* ]]; then
+            if [ "$version" == "1.0" ]; then
+              minor=0
+            else
+              minor=$((minor + 1))
+            fi
+          elif [[ "$title" == chore* ]]; then
+            major=$((major + 1))
+            minor=0
+          fi
+          new_tag="${major}.${minor}"
+          echo "NEW_TAG=$new_tag" >> $GITHUB_ENV
+
+      - name: Create new tag
+        run: |
+          new_tag="${{ env.NEW_TAG }}"
+          git tag "$new_tag"
+          git push origin "$new_tag"
+
+      - name: Pass tag to next workflow
+        run: echo "TAG=${{ env.NEW_TAG }}" >> $GITHUB_ENV
+
