@@ -24,7 +24,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
           
-      - name: Fetch all tags
+      - name: Fetch tags from master branch
         run: |
           git fetch origin master --tags
           git checkout master
@@ -35,7 +35,7 @@ jobs:
           latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "1.0")
           echo "TAG=$latest_tag" >> $GITHUB_ENV
 
-      - name: Extract PR title
+      - name: Extract commit message
         id: extract_title
         run: |
           title=$(git log -1 --pretty=%B)
@@ -48,16 +48,16 @@ jobs:
           IFS='.' read -r major minor <<< "$version"
           title="${{ env.TITLE }}"
 
-          if [[ "$title" == feat* ]]; then
-            if [ "$version" == "1.0" ]; then
-              minor=0
-            else
-              minor=$((minor + 1))
-            fi
-          elif [[ "$title" == chore* ]]; then
+          if echo "$title" | grep -q "^feat"; then
+            minor=$((minor + 1))
+          elif echo "$title" | grep -q "^chore"; then
             major=$((major + 1))
             minor=0
+          else
+            echo "Title type is not recognized. No version bump will be applied."
+            exit 1
           fi
+
           new_tag="${major}.${minor}"
           echo "NEW_TAG=$new_tag" >> $GITHUB_ENV
 
