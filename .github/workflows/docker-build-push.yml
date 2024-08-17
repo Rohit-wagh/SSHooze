@@ -1,0 +1,38 @@
+name: Docker Build and Push
+
+on:
+  push:
+    branches:
+      - master
+  workflow_run:
+    workflows: ["Version Bump"]
+    types:
+      - completed
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    needs: version_bump
+    if: github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Git
+        run: git fetch --tags
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_REPO_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and tag Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_REPO_USERNAME }}/sshooze:$TAG .
+
+      - name: Push Docker image to Docker Hub
+        run: |
+          docker push ${{ secrets.DOCKER_REPO_USERNAME }}/sshooze:$TAG
+
