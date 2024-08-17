@@ -30,14 +30,14 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_REPO_USERNAME }}/sshooze:$TAG .
+          docker build -t ${{ secrets.DOCKER_REPO_USERNAME }}/sshooze:${{ env.TAG }} .
 
       - name: Tag Docker image as latest
         run: |
-          docker tag ${{ secrets.DOCKER_REPO_USERNAME }}/sshooze:$TAG ${{ secrets.DOCKER_REPO_USERNAME }}/sshooze:latest
+          docker tag ${{ secrets.DOCKER_REPO_USERNAME }}/sshooze:${{ env.TAG }} ${{ secrets.DOCKER_REPO_USERNAME }}/sshooze:latest
 
       - name: Push Docker image to Docker Hub
         run: |
-          docker push ${{ secrets.DOCKER_REPO_USERNAME }}/sshooze:$TAG
+          docker push ${{ secrets.DOCKER_REPO_USERNAME }}/sshooze:${{ env.TAG }}
           docker push ${{ secrets.DOCKER_REPO_USERNAME }}/sshooze:latest
 
