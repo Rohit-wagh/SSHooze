@@ -32,8 +32,18 @@ jobs:
       - name: Get the latest tag
         id: get_latest_tag
         run: |
-          latest_tag=$(git rev-list --tags --max-count=1 master | xargs git describe --tags | awk -F'-' '{print $1}' | awk -F'.' '{print $1"."$2}' || echo "1.0")
-          echo "lateset_tag: $latest_tag"
+          # Fetch all tags and list them
+          git fetch --tags
+
+          # Find the latest tag from the master branch
+          latest_tag=$(git tag --list | grep -E '^[0-9]+\.[0-9]+' | sort -V | tail -n 1)
+
+          # Check if we have a tag, otherwise default to "1.0"
+          if [ -z "$latest_tag" ]; then
+            latest_tag="1.0"
+          fi
+
+          echo "latest_tag: $latest_tag"
           echo "TAG=$latest_tag" >> $GITHUB_ENV
 
       - name: Extract commit message
