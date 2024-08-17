@@ -45,7 +45,7 @@ SSHooze is a base image that:
      SSHooze "your command or script"
    ```
 
-   Example
+   Example:
    ```bash
    docker run \
      -e SSH_URL=SSHizzleMyFizzle.com \
