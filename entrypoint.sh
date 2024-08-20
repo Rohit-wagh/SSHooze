@@ -24,7 +24,7 @@ print_banner() {
 # Print the banner
 print_banner
 
-# Check if necessary environment variables are set individually
+# Check if necessary environment variables are set
 missing_vars=()
 [ -z "${SSH_URL}" ] && missing_vars+=("SSH_URL")
 [ -z "${USER_NAME}" ] && missing_vars+=("USER_NAME")
@@ -46,10 +46,8 @@ if ! id -u ${USER_NAME} >/dev/null 2>&1; then
 fi
 
 # Ensure .ssh and .cloudflared directories exist and have the right permissions
-mkdir -p /home/${USER_NAME}/.ssh
-mkdir -p /home/${USER_NAME}/.cloudflared
-chmod 700 /home/${USER_NAME}/.ssh
-chmod 700 /home/${USER_NAME}/.cloudflared
+mkdir -p /home/${USER_NAME}/.ssh /home/${USER_NAME}/.cloudflared
+chmod 700 /home/${USER_NAME}/.ssh /home/${USER_NAME}/.cloudflared
 
 # Copy the SSH key files from environment variables to the container
 if [ -n "${PRIVATE_KEY}" ]; then
@@ -76,9 +74,9 @@ chmod 600 /home/${USER_NAME}/.ssh/config
 
 # Add the host key to known_hosts using ssh-keyscan
 ssh-keyscan -H ${SSH_URL} >> /home/${USER_NAME}/.ssh/known_hosts
-
-# Check permissions
 chmod 600 /home/${USER_NAME}/.ssh/known_hosts
+
+# Set ownership and permissions for the user's home directory
 chown -R ${USER_NAME}:${USER_NAME} /home/${USER_NAME}/
 
 # Handle script content if provided via environment variable
@@ -90,20 +88,19 @@ if [ -n "${SCRIPT_CONTENT}" ]; then
   fi
 
   echo "${SCRIPT_CONTENT}" > /home/${USER_NAME}/remote_script.sh
-  chown ${USER_NAME}:${USER_NAME} /home/${USER_NAME}/remote_script.sh
   chmod +x /home/${USER_NAME}/remote_script.sh
 
-    # Execute the script on the remote server and then remove it
-    exec su - ${USER_NAME} -c "/usr/bin/scp -o StrictHostKeyChecking=no /home/${USER_NAME}/remote_script.sh ${USER_NAME}@${SSH_URL}:~/remote_script.sh && /usr/bin/ssh -o StrictHostKeyChecking=no -l ${USER_NAME} -o UserKnownHostsFile=/home/${USER_NAME}/.ssh/known_hosts ${SSH_URL} 'bash ~/remote_script.sh && rm ~/remote_script.sh'"
-  else
-    # If no script is provided, ensure a command is provided
-    if [ $# -eq 0 ]; then
-      print_error "No script content or command provided. Please provide a script or command to execute."
-      exit 1
-    fi
-
-    # Execute the command directly on the remote server
-    exec su - ${USER_NAME} -c "/usr/bin/ssh -o StrictHostKeyChecking=no -l ${USER_NAME} -o UserKnownHostsFile=/home/${USER_NAME}/.ssh/known_hosts ${SSH_URL} $@"
+  # Upload and execute the script
+  exec su - ${USER_NAME} -c "scp -o StrictHostKeyChecking=no /home/${USER_NAME}/remote_script.sh ${USER_NAME}@${SSH_URL}:~/remote_script.sh && ssh -o StrictHostKeyChecking=no -l ${USER_NAME} -o UserKnownHostsFile=/home/${USER_NAME}/.ssh/known_hosts ${SSH_URL} 'bash ~/remote_script.sh && rm ~/remote_script.sh'"
+else
+  # If no script is provided, ensure a command is provided
+  if [ $# -eq 0 ]; then
+    print_error "No script content or command provided. Please provide a script or command to execute."
+    exit 1
   fi
-  
+
+  # Execute the command directly on the remote server
+  exec su - ${USER_NAME} -c "/usr/bin/ssh -o StrictHostKeyChecking=no -l ${USER_NAME} -o UserKnownHostsFile=/home/${USER_NAME}/.ssh/known_hosts ${SSH_URL} $@"
+fi
+
 # 68 101 101 122 78 117 116 115 
