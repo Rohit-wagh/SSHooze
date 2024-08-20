@@ -1,26 +1,23 @@
-# Minimal Ubuntu base image
-FROM ubuntu:20.04
+# Minimal Alpine base image
+FROM alpine:latest
 
 # Set environment variables
 ENV CLOUD_FLARE_BIN=/usr/local/bin/cloudflared
 
-# Install necessary packages and clean up
-RUN apt-get update && \
-    apt-get install -y \
+# Install necessary packages and download cloudflared
+RUN apk add --no-cache \
         bash \
         openssh-client \
         wget \
-        ca-certificates && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+        ca-certificates \
+        shadow \
+    && wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -O ${CLOUD_FLARE_BIN} \
+    && chmod +x ${CLOUD_FLARE_BIN}
 
-# Download and install cloudflared
-RUN wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -O ${CLOUD_FLARE_BIN} && \
-    chmod +x ${CLOUD_FLARE_BIN}
-
-# Copy the entrypoint script
+# Copy the entrypoint script and make it executable
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Set the entrypoint
-ENTRYPOINT ["/entrypoint.sh"] 
+ENTRYPOINT ["/entrypoint.sh"]
+
